@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-Based Appointment System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: radial-gradient(circle at 10% 15%, rgba(255, 235, 242, 0.9) 0%, transparent 45%),
+                        radial-gradient(circle at 85% 85%, rgba(252, 218, 229, 0.85) 0%, transparent 50%),
+                        linear-gradient(135deg, #fdf0f4 0%, #f7d6e0 50%, #f2c6d2 100%);
+            background-attachment: fixed;
+            color: #5a3a42;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+        }
+        
+        .glass-navbar {
+            background: rgba(255, 255, 255, 0.55) !important;
+            border-bottom: 1px solid rgba(240, 185, 200, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 18px 30px;
+            box-shadow: 0 4px 20px rgba(220, 160, 180, 0.15);
+        }
+
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.65); 
+            border: 1px solid rgba(245, 195, 210, 0.6); 
+            border-radius: 22px; 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            padding: 28px 32px; 
+            box-shadow: 0 15px 35px rgba(210, 150, 170, 0.15); 
+        }
+
+        .btn-pink { 
+            background: linear-gradient(135deg, #e88fa2 0%, #d97288 100%); 
+            color: white; 
+            border: none; 
+            font-weight: 600; 
+            padding: 11px; 
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(217, 114, 136, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-pink:hover { 
+            color: white; 
+            opacity: 0.95; 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(217, 114, 136, 0.45);
+        }
+
+        .form-control, .form-select { 
+            background: rgba(255, 255, 255, 0.8) !important; 
+            border: 1px solid rgba(230, 175, 190, 0.6) !important; 
+            color: #5a3a42 !important; 
+            padding: 11px 16px; 
+            border-radius: 12px; 
+            font-size: 0.93rem;
+        }
+        .form-control:focus, .form-select:focus { 
+            background: rgba(255, 255, 255, 0.98) !important; 
+            color: #5a3a42 !important; 
+            border-color: #d97288 !important; 
+            box-shadow: 0 0 12px rgba(217, 114, 136, 0.25) !important; 
+        }
+
+        .form-label { font-size: 0.88rem; margin-bottom: 5px; font-weight: 600; color: #5a3a42 !important; }
+        .mb-3 { margin-bottom: 1.1rem !important; }
+
+        table { color: #5a3a42 !important; width: 100%; border-collapse: collapse; }
+        .table-container-custom { background: rgba(255, 255, 255, 0.75) !important; border-radius: 16px; overflow: hidden; border: 1px solid rgba(240, 185, 200, 0.6); }
+        .table-custom { margin-bottom: 0; color: #5a3a42 !important; background: transparent !important; }
+        .table-custom th { background-color: rgba(247, 214, 224, 0.85) !important; color: #5a3a42 !important; font-weight: 700; padding: 12px; }
+        .table-custom td { background: transparent !important; color: #5a3a42 !important; padding: 12px; border-bottom: 1px solid rgba(240, 185, 200, 0.3); }
+        
+        .auth-link { color: #c45b72; text-decoration: none; font-weight: 600; cursor: pointer; }
+        .auth-link:hover { text-decoration: underline; color: #a34358; }
+
+        .price-display-box {
+            font-size: 0.9rem;
+            color: #c45b72;
+            font-weight: 700;
+            margin-top: 6px;
+            min-height: 22px;
+        }
+
+        .nav-profile-img {
+            width: 38px;
+            height: 38px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #e88fa2;
+        }
+
+        .preview-profile-img {
+            width: 95px;
+            height: 95px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #e88fa2;
+            box-shadow: 0 4px 15px rgba(232, 143, 162, 0.3);
+        }
+
+        /* CHATBOT STYLES */
+        .chatbot-toggler {
+            position: fixed;
+            bottom: 30px;
+            right: 35px;
+            outline: none;
+            border: none;
+            height: 54px;
+            width: 54px;
+            display: flex;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e88fa2 0%, #d97288 100%);
+            box-shadow: 0 6px 18px rgba(217, 114, 136, 0.4);
+            z-index: 1000;
+        }
+        .chatbot-toggler i { color: #fff; font-size: 1.4rem; position: absolute; }
+        .chatbot-toggler i:last-child { opacity: 0; }
+        body.show-chatbot .chatbot-toggler i:first-child { opacity: 0; }
+        body.show-chatbot .chatbot-toggler i:last-child { opacity: 1; }
+
+        .chatbot {
+            position: fixed;
+            right: 35px;
+            bottom: 95px;
+            width: 370px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(240, 185, 200, 0.6);
+            border-radius: 20px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.5);
+            transform-origin: bottom right;
+            box-shadow: 0 15px 35px rgba(200, 140, 160, 0.25);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        body.show-chatbot .chatbot { opacity: 1; pointer-events: auto; transform: scale(1); }
+        .chatbot header { padding: 14px 0; text-align: center; background: rgba(252, 225, 233, 0.85); border-bottom: 1px solid rgba(240, 185, 200, 0.5); }
+        .chatbot header h2 { font-size: 1.05rem; margin: 0; color: #c45b72; font-weight: 700; }
+        .chatbot .chatbox { overflow-y: auto; height: 310px; padding: 15px 18px; list-style: none; margin: 0; }
+        .chatbox .chat { display: flex; margin-bottom: 12px; }
+        .chatbox .outgoing { justify-content: flex-end; }
+        .chatbox .chat p { padding: 9px 13px; border-radius: 14px; max-width: 82%; font-size: 0.87rem; margin: 0; }
+        .chatbox .incoming p { background: rgba(252, 235, 240, 0.95); border: 1px solid rgba(240, 185, 200, 0.5); }
+        .chatbox .outgoing p { background: linear-gradient(135deg, #e88fa2 0%, #d97288 100%); color: white; }
+        .chatbot .chat-input { display: flex; gap: 5px; padding: 10px 14px; border-top: 1px solid rgba(240, 185, 200, 0.5); background: rgba(255, 250, 252, 0.95); }
+        .chat-input input { height: 38px; width: 100%; border: none; outline: none; font-size: 0.88rem; background: transparent; padding: 0 8px; }
+        .chatbot .chat-input span { align-self: center; color: #d97288; cursor: pointer; font-size: 1.1rem; padding: 0 8px; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light glass-navbar px-4">
+        <div class="container-fluid position-relative d-flex justify-content-between align-items-center">
+            <div style="visibility: hidden;">
+                <span class="fs-6">&nbsp;</span>
+            </div>
+            
+            <a class="navbar-brand fw-bold fs-2 position-absolute start-50 translate-middle-x m-0 text-center" href="#" style="color:#c45b72; letter-spacing: 1px;">
+                <i class="fa-solid fa-calendar-check me-2"></i>Appointment System
+            </a>
+
+            <div class="d-flex align-items-center">
+                <span id="navUserInfo" style="display: none;" class="fs-6 align-items-center">
+                    <span id="clientNavControls" style="display: inline-flex;" class="me-2">
+                        <button onclick="switchView('profile')" class="btn btn-outline-pink btn-sm rounded-pill px-3 me-2" style="border-color: #e88fa2; color: #c45b72;"><i class="fa-solid fa-user-gear me-1"></i> Profile</button>
+                    </span>
+                    <span id="navAvatarContainer" class="me-2"></span>
+                    Hello, <strong class="ms-1" id="navUsername">User</strong> <em style="color: #c45b72;" id="navRole">(User)</em>
+                    <button onclick="logout()" class="btn btn-outline-secondary btn-sm rounded-pill px-3 ms-3">Logout</button>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div id="alertBox"></div>
+
+        <!-- LOGIN VIEW -->
+        <div id="loginView" class="row justify-content-center align-items-center" style="min-height: 65vh;">
+            <div class="col-md-5 col-lg-5">
+                <div class="glass-card text-center">
+                    <h3 class="fw-bold mb-4" style="color: #c45b72;">Welcome Back</h3>
+                    <form onsubmit="handleLogin(event)" class="text-start">
+                        <div class="mb-3">
+                            <label class="form-label">Login As</label>
+                            <select id="loginRole" class="form-select" required>
+                                <option value="User">User (Client)</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email or Username</label>
+                            <input type="text" id="loginEmail" class="form-control" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Password</label>
+                            <input type="password" id="loginPassword" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-pink w-100 mb-3">Login</button>
+                        <div class="text-center">
+                            <span class="text-muted">Don't have an account?</span> 
+                            <span class="auth-link" onclick="switchView('register')">Register</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- REGISTER VIEW -->
+        <div id="registerView" class="row justify-content-center align-items-center" style="min-height: 65vh; display: none;">
+            <div class="col-md-7 col-lg-6">
+                <div class="glass-card">
+                    <h3 class="fw-bold mb-4 text-center" style="color: #c45b72;">Create Account</h3>
+                    <form onsubmit="handleRegister(event)">
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Register As</label>
+                                <select id="regRole" class="form-select" required>
+                                    <option value="User">User (Client)</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" id="regName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Username</label>
+                                <input type="text" id="regUsername" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" id="regEmail" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Address</label>
+                                <input type="text" id="regAddress" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Contact Number</label>
+                                <input type="text" id="regContact" class="form-control" placeholder="09123456789" maxlength="11" oninput="validateContact(this)" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Password</label>
+                                <input type="password" id="regPassword" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Re-enter Password</label>
+                                <input type="password" id="regConfirmPassword" class="form-control" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-pink w-100 mb-3 mt-3">Register</button>
+                        <div class="text-center">
+                            <span class="text-muted">Already have an account?</span> 
+                            <span class="auth-link" onclick="switchView('login')">Login</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE SETTINGS VIEW -->
+        <div id="profileView" class="row justify-content-center align-items-center py-2" style="display: none; min-height: 65vh;">
+            <div class="col-md-8 col-lg-7">
+                <div class="glass-card">
+                    <h4 class="fw-bold mb-4 text-center" style="color: #c45b72;"><i class="fa-solid fa-user-gear me-2"></i>Profile Settings</h4>
+                    <form onsubmit="handleUpdateProfile(event)">
+                        <div class="text-center mb-4">
+                            <div id="profileAvatarPreview" class="mb-2 d-inline-block">
+                                <i class="fa-solid fa-circle-user display-4" style="color: #e88fa2;"></i>
+                            </div>
+                            <div>
+                                <label class="form-label d-block text-muted mt-2" style="font-size: 0.8rem;">Upload Profile Picture</label>
+                                <input type="file" id="profPicInput" class="form-control form-control-sm mx-auto" style="max-width: 260px;" accept="image/*" onchange="previewImage(this)">
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" id="profName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Username</label>
+                                <input type="text" id="profUsername" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" id="profEmail" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label">Contact Number</label>
+                                <input type="text" id="profContact" class="form-control" maxlength="11" oninput="validateContact(this)" required>
+                            </div>
+                            <div class="col-12 mb-2">
+                                <label class="form-label">Address</label>
+                                <input type="text" id="profAddress" class="form-control" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-pink w-100 mb-3 mt-4">Update Profile</button>
+                        <div class="text-center">
+                            <span class="auth-link" onclick="switchView('dashboard')"><i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- USER DASHBOARD -->
+        <div id="userDashboard" class="row g-4 justify-content-center py-2" style="display: none;">
+            <div class="col-md-5 col-lg-4">
+                <div class="glass-card">
+                    <h4 class="fw-bold mb-4 text-center" style="color: #c45b72;">
+                        <i class="fa-solid fa-calendar-plus me-2"></i>Book Appointment
+                    </h4>
+                    <form id="bookingForm" onsubmit="handleBooking(event)">
+                        <div class="mb-2">
+                            <label class="form-label">Service Type</label>
+                            <select id="serviceSelect" class="form-select" required onchange="showServicePrice()">
+                                <option value="" disabled selected>-- Select Service Type --</option>
+                                <option value="Consultation">Consultation</option>
+                                <option value="Check-up">Check-up</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="price-display-box mb-3" id="priceDisplay"></div>
+                        <div class="mb-3">
+                            <label class="form-label">Date (Max 10 patients/day)</label>
+                            <input type="date" id="appDate" class="form-control" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Time Slot (8:00 AM - 4:00 PM Only)</label>
+                            <input type="time" id="appTime" class="form-control" min="08:00" max="16:00" required>
+                        </div>
+                        <button type="submit" class="btn btn-pink w-100">Submit Booking</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-7 col-lg-8">
+                <div class="glass-card">
+                    <h4 class="fw-bold mb-4" style="color: #c45b72;">
+                        <i class="fa-solid fa-list-check me-2"></i>My Bookings
+                    </h4>
+                    <div class="table-container-custom">
+                        <div class="table-responsive">
+                            <table class="table table-custom align-middle">
+                               <thead>
+                                   <tr>
+                                       <th>Service</th>
+                                       <th>Price</th>
+                                       <th>Date & Time</th>
+                                       <th>Status</th>
+                                       <th>Action</th>
+                                   </tr>
+                               </thead>
+                               <tbody id="userBookingsTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN DASHBOARD -->
+        <div id="adminDashboard" class="row justify-content-center py-2" style="display: none;">
+            <div class="col-md-12 col-lg-12">
+                <div class="glass-card">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                        <h4 class="fw-bold m-0" style="color: #c45b72;"><i class="fa-solid fa-chart-line me-2"></i>Admin Dashboard - Appointment Lists</h4>
+                        
+                        <!-- Admin Filters -->
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <div class="d-flex align-items-center">
+                                <label class="form-label me-1 mb-0" style="font-size: 0.8rem;">Date:</label>
+                                <input type="date" id="filterDate" class="form-control form-control-sm" onchange="renderAppointments()">
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <label class="form-label me-1 mb-0" style="font-size: 0.8rem;">Service:</label>
+                                <select id="filterService" class="form-select form-select-sm" onchange="renderAppointments()" style="width: 140px;">
+                                    <option value="">All Services</option>
+                                    <option value="Consultation">Consultation</option>
+                                    <option value="Check-up">Check-up</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                </select>
+                            </div>
+                            <button onclick="resetAdminFilters()" class="btn btn-outline-danger btn-sm rounded-pill" title="Reset Filters"><i class="fa-solid fa-rotate-left"></i></button>
+                        </div>
+                    </div>
+                    <div class="table-container-custom">
+                        <div class="table-responsive">
+                            <table class="table table-custom align-middle">
+                               <thead>
+                                   <tr>
+                                       <th>Name</th>
+                                       <th>Contact Number</th>
+                                       <th>Address</th>
+                                       <th>Service</th>
+                                       <th>Price</th>
+                                       <th>Date & Time</th>
+                                       <th>Status</th>
+                                       <th>Action</th>
+                                   </tr>
+                               </thead>
+                               <tbody id="adminBookingsTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHATBOT -->
+    <button class="chatbot-toggler" onclick="document.body.classList.toggle('show-chatbot')">
+        <i class="fa-solid fa-comment"></i>
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div class="chatbot">
+        <header>
+            <h2><i class="fa-solid fa-robot me-2"></i>Assistant Bot</h2>
+        </header>
+        <ul class="chatbox" id="chatbox">
+            <li class="chat incoming">
+                <p>Hi there! 👋 Ask me about our location, service prices, or operating hours.</p>
+            </li>
+        </ul>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') handleChat()">
+            <span onclick="handleChat()"><i class="fa-solid fa-paper-plane"></i></span>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('appDate').min = new Date().toISOString().split('T')[0];
+
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        let tempAvatarBase64 = '';
+
+        function validateContact(input) {
+            let val = input.value.replace(/\D/g, '');
+            if (val.length > 0 && val[0] !== '0') {
+                val = '0' + val.substring(1);
+            }
+            if (val.length > 11) {
+                val = val.substring(0, 11);
+            }
+            input.value = val;
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tempAvatarBase64 = e.target.result;
+                    document.getElementById('profileAvatarPreview').innerHTML = `<img src="${tempAvatarBase64}" class="preview-profile-img" alt="Avatar">`;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function switchView(viewName) {
+            document.getElementById('loginView').style.display = viewName === 'login' ? 'flex' : 'none';
+            document.getElementById('registerView').style.display = viewName === 'register' ? 'flex' : 'none';
+            document.getElementById('profileView').style.display = viewName === 'profile' ? 'flex' : 'none';
+            document.getElementById('userDashboard').style.display = viewName === 'dashboard' ? 'flex' : 'none';
+            document.getElementById('adminDashboard').style.display = 'none';
+
+            if (viewName === 'profile') {
+                document.getElementById('profName').value = currentUser.name;
+                document.getElementById('profUsername').value = currentUser.username;
+                document.getElementById('profEmail').value = currentUser.email;
+                document.getElementById('profContact').value = currentUser.contact || '';
+                document.getElementById('profAddress').value = currentUser.address || '';
+                tempAvatarBase64 = currentUser.avatar || '';
+                
+                if (currentUser.avatar) {
+                    document.getElementById('profileAvatarPreview').innerHTML = `<img src="${currentUser.avatar}" class="preview-profile-img" alt="Avatar">`;
+                } else {
+                    document.getElementById('profileAvatarPreview').innerHTML = `<i class="fa-solid fa-circle-user display-4" style="color: #e88fa2;"></i>`;
+                }
+            }
+
+            if (viewName === 'dashboard') {
+                checkAuthSession();
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const role = document.getElementById('regRole').value;
+            const name = document.getElementById('regName').value;
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const address = document.getElementById('regAddress').value;
+            const contact = document.getElementById('regContact').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            if (contact.length !== 11 || !contact.startsWith('0')) {
+                showAlert('Contact number must be exactly 11 digits and start with 0!', 'danger');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match!', 'danger');
+                return;
+            }
+
+            if (users.some(u => u.email === email || u.username === username)) {
+                showAlert('Email or Username already exists!', 'danger');
+                return;
+            }
+
+            users.push({ role, name, username, email, address, contact, password, avatar: '' });
+            localStorage.setItem('users', JSON.stringify(users));
+            showAlert('Registration successful! Please login.', 'success');
+            switchView('login');
+        }
+
+        function handleUpdateProfile(e) {
+            e.preventDefault();
+            const name = document.getElementById('profName').value;
+            const username = document.getElementById('profUsername').value;
+            const email = document.getElementById('profEmail').value;
+            const contact = document.getElementById('profContact').value;
+            const address = document.getElementById('profAddress').value;
+
+            if (contact.length !== 11 || !contact.startsWith('0')) {
+                showAlert('Contact number must be exactly 11 digits and start with 0!', 'danger');
+                return;
+            }
+
+            currentUser.name = name;
+            currentUser.username = username;
+            currentUser.email = email;
+            currentUser.contact = contact;
+            currentUser.address = address;
+            currentUser.avatar = tempAvatarBase64;
+
+            users = users.map(u => u.username === currentUser.username ? currentUser : u);
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            showAlert('Profile updated successfully!', 'success');
+            checkAuthSession();
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const role = document.getElementById('loginRole').value;
+            const identifier = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const found = users.find(u => (u.email === identifier || u.username === identifier) && u.role === role && u.password === password);
+
+            if (found || (identifier === 'admin' && password === 'admin')) {
+                currentUser = found || { name: 'Admin', role: 'Admin', username: 'admin', contact: 'N/A', address: 'N/A', avatar: '' };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                checkAuthSession();
+            } else {
+                showAlert('Invalid credentials or role mismatch.', 'danger');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('navUserInfo').style.display = 'none';
+            switchView('login');
+        }
+
+        function checkAuthSession() {
+            if (!currentUser) {
+                switchView('login');
+                return;
+            }
+
+            document.getElementById('navUsername').innerText = currentUser.name;
+            document.getElementById('navRole').innerText = `(${currentUser.role})`;
+            
+            const avatarContainer = document.getElementById('navAvatarContainer');
+            if (currentUser.avatar) {
+                avatarContainer.innerHTML = `<img src="${currentUser.avatar}" class="nav-profile-img" alt="Profile">`;
+            } else {
+                avatarContainer.innerHTML = `<i class="fa-solid fa-circle-user fs-3" style="color: #e88fa2;"></i>`;
+            }
+
+            document.getElementById('navUserInfo').style.display = 'inline-flex';
+
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('registerView').style.display = 'none';
+            document.getElementById('profileView').style.display = 'none';
+
+            if (currentUser.role === 'Admin') {
+                document.getElementById('adminDashboard').style.display = 'block';
+                document.getElementById('userDashboard').style.display = 'none';
+                document.getElementById('clientNavControls').style.display = 'inline-flex';
+            } else {
+                document.getElementById('userDashboard').style.display = 'flex';
+                document.getElementById('adminDashboard').style.display = 'none';
+                document.getElementById('clientNavControls').style.display = 'inline-flex';
+            }
+            renderAppointments();
+        }
+
+        function showServicePrice() {
+            const val = document.getElementById('serviceSelect').value;
+            const display = document.getElementById('priceDisplay');
+            if (val === 'Consultation') display.innerHTML = '<i class="fa-solid fa-tag me-1"></i> Price: 500 PHP';
+            else if (val === 'Check-up') display.innerHTML = '<i class="fa-solid fa-tag me-1"></i> Price: 300 PHP';
+            else if (val === 'Maintenance') display.innerHTML = '<i class="fa-solid fa-tag me-1"></i> Price: 1,000 PHP';
+            else display.innerHTML = '';
+        }
+
+        function handleBooking(e) {
+            e.preventDefault();
+            const service = document.getElementById('serviceSelect').value;
+            const appDate = document.getElementById('appDate').value;
+            const appTime = document.getElementById('appTime').value;
+
+            const countForDate = appointments.filter(a => a.appDate === appDate && a.status !== 'Cancelled').length;
+            if (countForDate >= 10) {
+                showAlert('Full Sched! This date has already reached the maximum limit of 10 patients.', 'danger');
+                return;
+            }
+
+            let price = service === 'Consultation' ? '500 PHP' : (service === 'Check-up' ? '300 PHP' : '1,000 PHP');
+
+            const newApp = {
+                id: Date.now(),
+                username: currentUser.username,
+                name: currentUser.name,
+                contact: currentUser.contact || 'N/A',
+                address: currentUser.address || 'N/A',
+                service: service,
+                price: price,
+                appDate: appDate,
+                appTime: appTime,
+                status: 'Pending'
+            };
+
+            appointments.unshift(newApp);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            showAlert('Appointment booked successfully!', 'success');
+            document.getElementById('bookingForm').reset();
+            document.getElementById('priceDisplay').innerHTML = '';
+            renderAppointments();
+        }
+
+        function updateStatus(id, newStatus) {
+            appointments = appointments.map(app => {
+                if (app.id === id) app.status = newStatus;
+                return app;
+            });
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            renderAppointments();
+        }
+
+        function deleteAppointment(id) {
+            if (confirm('Are you sure you want to delete this appointment?')) {
+                appointments = appointments.filter(app => app.id !== id);
+                localStorage.setItem('appointments', JSON.stringify(appointments));
+                renderAppointments();
+            }
+        }
+
+        function resetAdminFilters() {
+            document.getElementById('filterDate').value = '';
+            document.getElementById('filterService').value = '';
+            renderAppointments();
+        }
+
+        function renderAppointments() {
+            const userTable = document.getElementById('userBookingsTable');
+            const adminTable = document.getElementById('adminBookingsTable');
+            const filterDate = document.getElementById('filterDate').value;
+            const filterService = document.getElementById('filterService') ? document.getElementById('filterService').value : '';
+
+            userTable.innerHTML = '';
+            adminTable.innerHTML = '';
+
+            let userApps = appointments.filter(a => a.username === currentUser.username);
+            let adminApps = appointments;
+
+            if (currentUser.role === 'Admin') {
+                if (filterDate) {
+                    adminApps = adminApps.filter(a => a.appDate === filterDate);
+                }
+                if (filterService) {
+                    adminApps = adminApps.filter(a => a.service === filterService);
+                }
+            }
+
+            if (userApps.length === 0) {
+                userTable.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No bookings found.</td></tr>`;
+            } else {
+                userApps.forEach(app => {
+                    let badgeClass = 'bg-warning text-dark';
+                    if (app.status === 'Confirmed') badgeClass = 'bg-info text-dark';
+                    if (app.status === 'Completed') badgeClass = 'bg-success text-white';
+                    if (app.status === 'Cancelled') badgeClass = 'bg-danger text-white';
+
+                    userTable.innerHTML += `
+                        <tr>
+                            <td>${app.service}</td>
+                            <td><strong>${app.price}</strong></td>
+                            <td>${app.appDate} ${app.appTime}</td>
+                            <td><span class="badge ${badgeClass}">${app.status}</span></td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    ${app.status === 'Pending' ? `<button onclick="updateStatus(${app.id}, 'Cancelled')" class="btn btn-danger btn-sm">Cancel</button>` : `<button class="btn btn-secondary btn-sm" disabled title="Cannot cancel once confirmed">Cancel</button>`}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            if (adminApps.length === 0) {
+                adminTable.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">No appointments found.</td></tr>`;
+            } else {
+                adminApps.forEach(app => {
+                    let badgeClass = 'bg-warning text-dark';
+                    if (app.status === 'Confirmed') badgeClass = 'bg-info text-dark';
+                    if (app.status === 'Completed') badgeClass = 'bg-success text-white';
+                    if (app.status === 'Cancelled') badgeClass = 'bg-danger text-white';
+
+                    adminTable.innerHTML += `
+                        <tr>
+                            <td>${app.name}</td>
+                            <td>${app.contact}</td>
+                            <td>${app.address}</td>
+                            <td>${app.service}</td>
+                            <td><strong>${app.price}</strong></td>
+                            <td>${app.appDate} ${app.appTime}</td>
+                            <td><span class="badge ${badgeClass}">${app.status}</span></td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    ${app.status === 'Pending' ? `<button onclick="updateStatus(${app.id}, 'Confirmed')" class="btn btn-primary btn-sm" title="Confirm"><i class="fa-solid fa-check"></i></button>` : ''}
+                                    ${app.status !== 'Completed' && app.status !== 'Cancelled' ? `<button onclick="updateStatus(${app.id}, 'Completed')" class="btn btn-success btn-sm" title="Complete"><i class="fa-solid fa-check-double"></i></button>` : ''}
+                                    <button onclick="deleteAppointment(${app.id})" class="btn btn-danger btn-sm" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function showAlert(msg, type) {
+            const box = document.getElementById('alertBox');
+            box.innerHTML = `<div class="alert alert-${type} text-center border-0 shadow-sm py-2 mb-4">${msg}</div>`;
+            setTimeout(() => box.innerHTML = '', 4000);
+        }
+
+        const botAnswers = {
+            "check-up": "The fee for a Check-up is 300 PHP.",
+            "maintenance": "The fee for Maintenance service is 1,000 PHP.",
+            "consultation": "The fee for Consultation is 500 PHP.",
+            "price": "Service fees:\n- Check-up: 300 PHP\n- Consultation: 500 PHP\n- Maintenance: 1,000 PHP",
+            "location": "BF Int./CAA, Las Pinas City",
+            "address": "BF Int./CAA, Las Pinas City",
+            "saan": "BF Int./CAA, Las Pinas City",
+            "where": "BF Int./CAA, Las Pinas City",
+            "time": "Our operating hours are strictly from 8:00 AM to 4:00 PM.",
+            "hi": "Hello! How can I assist you today?"
+        };
+
+        function handleChat() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const chatbox = document.getElementById('chatbox');
+            chatbox.innerHTML += `<li class="chat outgoing"><p>${msg}</p></li>`;
+            input.value = '';
+            chatbox.scrollTo(0, chatbox.scrollHeight);
+
+            let reply = "I am sorry, I didn't understand. Ask about our location, prices, or operating hours.";
+            const lower = msg.toLowerCase();
+            for (let key in botAnswers) {
+                if (lower.includes(key)) {
+                    reply = botAnswers[key];
+                    break;
+                }
+            }
+
+            setTimeout(() => {
+                chatbox.innerHTML += `<li class="chat incoming"><p>${reply}</p></li>`;
+                chatbox.scrollTo(0, chatbox.scrollHeight);
+            }, 400);
+        }
+
+        checkAuthSession();
+    </script>
+</body>
+</html>
